@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+
+#sshkey.exp
+
+if {$argc<3} {
+ puts stderr "Usage: $argv0 host  user  passwd "
+ exit 1
+}
+
+set host [ lindex $argv 0 ]
+set user  [ lindex $argv 1 ]
+set pwd  [ lindex $argv 2 ]
+
+set timeout 30
+
+ 
+
+spawn ssh ${user}@${host} "rm -rf ~/.ssh/id_rsa*"
+
+expect {
+ "*yes/no" { send "yes\n"; exp_continue }
+ "*password:" { send "$pwd\n"; exp_continue  }
+}
+
+
+spawn ssh ${user}@${host} "ssh-keygen -t rsa"
+
+expect {
+ "*yes/no" { send "yes\n"; exp_continue }
+ "*password:" { send "$pwd\n"; exp_continue  }
+ "Enter file in which to save the key*" { send "\n"; exp_continue }
+ "Overwrite*" { send "y\n"; exp_continue } 
+ "Enter passphrase (empty for no passphrase):" { send "\n"; exp_continue }
+ "Enter same passphrase again:" { send "\n" }
+}
+
+spawn ssh ${user}@${host} "cat ~/.ssh/id_rsa.pub"
+
+expect {
+ "*yes/no" { send "yes\n"; exp_continue }
+ "*password:" { send "$pwd\n"  }
+}
+
+expect eof

@@ -1,0 +1,24 @@
+#!/usr/bin/expect
+
+#noscp.exp
+
+if {$argc<4} {
+ puts stderr "Usage: $argv0 localfile  remotefile user passwd "
+ exit 1
+}
+
+set localfile [ lindex $argv 0 ]
+set remotefile  [ lindex $argv 1 ]
+set user  [ lindex $argv 2 ]
+set pwd  [ lindex $argv 3 ]
+
+set timeout 30
+
+spawn scp ${localfile} ${user}@${remotefile}
+
+expect {
+ "*yes/no" { send "yes\r"; exp_continue }
+ "*password:" { send "$pwd\r" }
+}
+
+expect eof
